@@ -1,5 +1,5 @@
 {
-  "name": "sol-tcr",
+  "name": "api.js",
   "version": "0.0.1",
   "description": "A generic, string-keyed TCR in Solidity",
   "scripts": {
@@ -17,7 +17,7 @@
     "fix": "eslint --fix",
     "lint": "eslint"
   },
-  "author": "Irene Lin <irene.lin@consensys.net>, Mira Zeitlin <miranda.zeitlin@consensys.net>, Yorke Rhodes <yorke.rhodesiv@consensys.net>",
+  "author": "Irene Lin <irene.lin@consensys.net>",
   "license": "ISC",
   "dependencies": {
     "bignumber.js": "5.0.0",
@@ -39,5 +39,17 @@
     "eslint-config-airbnb-base": "12.1.0",
     "eslint-plugin-import": "2.8.0",
     "solidity-coverage": "0.5.4"
-  }
+  },
+  "main": ".solcover.js",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TCR-Simulator/tcr.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TCR-Simulator/tcr/issues"
+  },
+  "homepage": "https://github.com/TCR-Simulator/tcr#readme"
 }
