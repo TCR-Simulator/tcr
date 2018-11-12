@@ -32,6 +32,8 @@
     "ethjs-rpc": "0.1.8",
     "ethjs-util": "0.1.4",
     "express": "^4.16.4",
+    "jsonfile": "^5.0.0",
+    "node-cmd": "^3.0.0",
     "truffle": "4.1.11",
     "truffle-hdwallet-provider": "0.0.5"
   },
