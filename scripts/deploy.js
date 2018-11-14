@@ -12,7 +12,7 @@ const TestToken = artifacts.require('TestToken.sol');
  * @return {object} An object containing the addresses of the creator, token, plcr, parameterizer,
  *                  and registry.
  */
-async function deployRegistry(networkID, name, parameters) {
+async function deployRegistryToNetwork(networkID, name, parameters) {
   let registryFactoryAddress;
   if (networkID === '1') {
     registryFactoryAddress = '0xcc0df91b86795f21c3d43dbeb3ede0dfcf8dccaf'; // mainnet
@@ -47,21 +47,34 @@ async function deployRegistry(networkID, name, parameters) {
 
   return registryReceipt.logs[0].args;
 }
+/**
+ * Deploy a registry with the specified config. The deployed registry uses TestToken. This method
+ * will automatically select the current network.
+ * @param {string} name Name of the TCR to be created.
+ * @param {object} parameters Parameters to initiate the TCR with.
+ * @return {object} An object containing the addresses of the creator, token, plcr, parameterizer,
+ *                  and registry.
+ */
+async function deployRegistry(name, parameters) {
+  return new Promise((resolve, reject) => {
+    web3.version.getNetwork((err, network) => {
+      if (err) {
+        return reject(err);
+      }
+
+      return deployRegistryToNetwork(network, name, parameters)
+        .then(result => resolve(result));
+    });
+  });
+}
 
 module.exports = (done) => {
-  web3.version.getNetwork((err, network) => {
-    if (err) {
-      return done(err); // truffle exec exits if an error gets returned
-    }
-
-    const configFile = process.argv[process.argv.length - 1];
-    console.log(`Using config file: ${configFile}`); // eslint-disable-line no-console
-
-    const config = JSON.parse(fs.readFileSync(configFile));
-    const { name, paramDefaults } = config;
-    return deployRegistry(network, name, paramDefaults).then((result) => {
-      console.log(result); // eslint-disable-line no-console
-      return done();
-    });
+  const configFile = process.argv[process.argv.length - 1];
+  console.log(`Using config file: ${configFile}`); // eslint-disable-line no-console
+  const config = JSON.parse(fs.readFileSync(configFile));
+  const { name, paramDefaults } = config;
+  return deployRegistry(name, paramDefaults).then((result) => {
+    console.log(result); // eslint-disable-line no-console
+    return done();
   });
 };
