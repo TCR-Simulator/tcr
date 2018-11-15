@@ -12,7 +12,7 @@ if (process.env.MNEMONIC) {
   mnemonic = process.env.MNEMONIC;
 }
 
-mnemonic = 'cable bounce labor unknown exist movie cheap dilemma nose market foil elite';
+mnemonic = 'noodle lady armed canvas guard similar injury coral excuse typical scale dirt';
 
 module.exports = {
   networks: {
@@ -27,7 +27,7 @@ module.exports = {
       network_id: '*',
       gas: 6000000,
       gasPrice: 25000000000,
-      host: "localhost"
+      host: 'localhost',
     },
     rinkeby: {
       provider: () => new HDWalletProvider(mnemonic, 'https://rinkeby.infura.io'),
