@@ -3,6 +3,7 @@ const deploy = require('./deploy');
 const bodyParser = require('body-parser');
 const jsonfile = require('jsonfile');
 const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const port = 3000;
@@ -87,6 +88,15 @@ app.post('/tcrs/:tcrId/deploy', (req, res) => {
   paramTCR.contracts.voting.addres = deployed.plcr;
   // Change deploy status
   paramTCR.status = 'deployed';
+});
+
+app.get('/contracts/:contract.json', (req, res) => {
+  const contractsDir = path.join(__dirname, '../build/contracts');
+  const contract = JSON.parse(fs.readFileSync(`${contractsDir}/${req.params.contract}.json`));
+  res.json({
+    address: contract.networks['5777'].address,
+    abi: contract.abi,
+  });
 });
 
 app.listen(port, () => console.log(`TCR Server app listening on port ${port}!`));
