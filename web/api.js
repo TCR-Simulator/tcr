@@ -93,8 +93,9 @@ app.post('/tcrs/:tcrId/deploy', (req, res) => {
 app.get('/contracts/:contract.json', (req, res) => {
   const contractsDir = path.join(__dirname, '../build/contracts');
   const contract = JSON.parse(fs.readFileSync(`${contractsDir}/${req.params.contract}.json`));
+  const network = contract.networks['5777'] || { address: null };
   res.json({
-    address: contract.networks.hasOwnProperty('5777') ? contract.networks['5777'].address : null,
+    address: network.address,
     abi: contract.abi,
   });
 });
