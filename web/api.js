@@ -94,7 +94,7 @@ app.get('/contracts/:contract.json', (req, res) => {
   const contractsDir = path.join(__dirname, '../build/contracts');
   const contract = JSON.parse(fs.readFileSync(`${contractsDir}/${req.params.contract}.json`));
   res.json({
-    address: contract.networks['5777'].address,
+    address: contract.networks.hasOwnProperty('5777') ? contract.networks['5777'].address : null,
     abi: contract.abi,
   });
 });
