@@ -12,8 +12,6 @@ if (process.env.MNEMONIC) {
   mnemonic = process.env.MNEMONIC;
 }
 
-mnemonic = 'noodle lady armed canvas guard similar injury coral excuse typical scale dirt';
-
 module.exports = {
   networks: {
     mainnet: {
