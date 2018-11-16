@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const jsonfile = require('jsonfile');
 const fs = require('fs');
 const path = require('path');
+const cors = require('cors');
 
 const app = express();
 const port = 3000;
@@ -11,7 +12,7 @@ const stdin = process.openStdin();
 
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
-
+app.use(cors());
 
 const tcrMap = new Map();
 
