@@ -8,7 +8,7 @@ import "./Parameterizer.sol";
 
 contract RegistryFactory {
 
-    event NewRegistry(address creator, EIP20 token, PLCRVoting plcr, Parameterizer parameterizer, Registry registry);
+    event NewRegistry(address creator, EIP20 token, PLCRVoting plcr, Parameterizer parameterizer, Registry registry, string name, uint[] parameters);
 
     ParameterizerFactory public parameterizerFactory;
     ProxyFactory public proxyFactory;
@@ -37,7 +37,7 @@ contract RegistryFactory {
         Registry registry = Registry(proxyFactory.createProxy(canonizedRegistry, ""));
         registry.init(_token, plcr, parameterizer, _name);
 
-        emit NewRegistry(msg.sender, _token, plcr, parameterizer, registry);
+        emit NewRegistry(msg.sender, _token, plcr, parameterizer, registry, _name, _parameters);
         return registry;
     }
 
@@ -68,7 +68,7 @@ contract RegistryFactory {
         Registry registry = Registry(proxyFactory.createProxy(canonizedRegistry, ""));
         registry.init(token, plcr, parameterizer, _registryName);
 
-        emit NewRegistry(msg.sender, token, plcr, parameterizer, registry);
+        emit NewRegistry(msg.sender, token, plcr, parameterizer, registry, _registryName, _parameters);
         return registry;
     }
 }
