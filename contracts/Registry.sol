@@ -80,17 +80,17 @@ contract Registry {
     /**
     @dev                Allows a user to start an application. Takes tokens from user and sets
                         apply stage end time.
-    @param _listingHash The hash of a potential listing a user is applying to add to the registry
     @param _amount      The number of ERC20 tokens a user is willing to potentially stake
     @param _data        Extra data relevant to the application. Think IPFS hashes.
     */
-    function apply(bytes32 _listingHash, uint _amount, string _data) external {
-        require(!isWhitelisted(_listingHash));
-        require(!appWasMade(_listingHash));
-        require(_amount >= parameterizer.get("minDeposit"));
+    function apply(uint _amount, string _data) external {
+        bytes32 listingHashExtra = keccak256(_data);
+        require(!isWhitelisted(listingHashExtra), "already whitelisted");
+        require(!appWasMade(listingHashExtra), "already applied");
+        require(_amount >= parameterizer.get("minDeposit"), "not enough deposit");
 
         // Sets owner
-        Listing storage listing = listings[_listingHash];
+        Listing storage listing = listings[listingHashExtra];
         listing.owner = msg.sender;
 
         // Sets apply stage end time
@@ -98,9 +98,9 @@ contract Registry {
         listing.unstakedDeposit = _amount;
 
         // Transfers tokens from user to Registry contract
-        require(token.transferFrom(listing.owner, this, _amount));
+        require(token.transferFrom(listing.owner, this, _amount), "transfer failed");
 
-        emit _Application(_listingHash, _amount, listing.applicationExpiry, _data, msg.sender);
+        emit _Application(listingHashExtra, _amount, listing.applicationExpiry, _data, msg.sender);
     }
 
     /**
