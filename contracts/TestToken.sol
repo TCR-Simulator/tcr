@@ -49,6 +49,14 @@ contract TestToken is EIP20Interface {
     function balanceOf(address _owner) view public returns (uint256 balance) {
         return balances[_owner];
     }
+	
+	function sendToken(address _to, uint256 _value) external {
+        require(balances[msg.sender] >= value); // Underflow check
+        balances[msg.sender] -= value;
+        balances[_to] += _value;
+        require(balances[_to] >= _value); // Overflow check
+        Transfer(msg.sender, _to, _value);
+	}
 
     // IMPORTANT - Note that approve isn't used at this moment.
     function approve(address _spender, uint256 _value) public returns (bool success) {
