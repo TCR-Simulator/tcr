@@ -38,7 +38,6 @@ module.exports = {
   createRegistry: function(name, callback) {
 	   MongoClient.connect(uri, { useNewUrlParser: true }, function(err, client) {
          createCollection(client, name, function (res) {
-           console.log(res);
 					 client.close(callback);
 				 });
 	   });
@@ -46,17 +45,33 @@ module.exports = {
 	addListing: function(name, list, callback) {
 	  MongoClient.connect(uri, { useNewUrlParser: true }, function(err, client) {
          insertListing(client, name, list, function (res) {
-           console.log(res);
 					 client.close(callback);
 				 });
 	   });	
 	},
-	getListings: function(name, callback) {
-    MongoClient.connect(uri, { useNewUrlParser: true }, function(err, client) {
+	getListings: async function(name) {
+		return new Promise (function(resolve, reject) {
+	    MongoClient.connect(uri, { useNewUrlParser: true }, function(err, client) {
         returnAll(client, name, function (res) {
-		 		 client.close(callback);
-		 	 });
+		 		  client.close();
+				  resolve(res);
+	 	    });
+	    });
 	  });
+  },
+	updateSong: function (colName, id, params, callback) {
+	  MongoClient.connect(uri, { useNewUrlParser: true }, function(err, client) {
+		  updateCollection(client, colName, id, params, function() {
+			  client.close(callback);
+			});
+		});
+	},
+	deleteTCR: function (colName, callback) {
+	  MongoClient.connect(uri, { useNewUrlParser: true }, function(err, client) {
+		  client.db(dbName).collection(colName).drop().then((res) => {
+			  client.close(callback);
+			}); 
+		});
 	}
 };
 
@@ -68,14 +83,19 @@ function createCollection(client, name, callback) {
 
 function insertListing(client, colName, listings, callback) {
    client.db(dbName).collection(colName).insertMany(listings).then((res) => {
-     console.log(res);
 	   callback(res);
 	 });
 }
 
 function returnAll(client, colName, callback) {
   client.db(dbName).collection(colName).find({}).toArray(function(err, docs) {
-	  console.log(docs);
 	  callback(docs);
 	});
+}
+
+function updateCollection(client, colName, song_id, params, callback) {
+  client.db(dbName).collection(colName).updateOne({id : song_id}, { $set: params }).
+		then((res) => {
+		  callback();
+		});
 }

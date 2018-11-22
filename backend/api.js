@@ -4,21 +4,12 @@ const MongoClient = require('mongodb').MongoClient;
 const port = 3000;
 const bodyParser = require('body-parser');
 const jsonfile = require('jsonfile');
-const cmd = require('node-cmd');
-const fs = require('fs');
 const database = require('./database');
-const uri = "mongodb+srv://softeng18:" + process.env.SOFTENG_MONGODB_PASSWORD + "@musicmap-caf2e.mongodb.net/test?retryWrites=true"
 
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
 
 var tcrMap = new Map();
-
-const list = [
-  { id: "1", title: "Kill me Now - By Ece", status: "accepted", url: "www.killmenow.com", listingHash: "123", challengeHash: "456" },
-{ id: "1", title: "Wow it is working - By Ece", status: "rejected", url: "www.killmenow.com", listingHash: "123", challengeHash: "456" }
-  
-]
 
 function tcrObject(id, address, name, status, abi, parameters) { 
 	this.id = id;
@@ -29,12 +20,12 @@ function tcrObject(id, address, name, status, abi, parameters) {
 	this.parameters = parameters;
 }
 
-//Get all TCRs
+/* Get all TCRs */
 app.get('/tcrs/', function (req, res) {
 	res.json(JSON.stringify([...tcrMap]));
 });
 
-//Create a new tcr
+/* Create a new tcr */
 app.post('/tcrs/', function (req, res) {
 	var id = (Math.round((new Date()).getTime() / 1000)).toString();
 	var paramTCR = new tcrObject(id, "0x234981210434", 
@@ -46,42 +37,50 @@ app.post('/tcrs/', function (req, res) {
 	});
 });
 
+/* Get the TCR associated with the tcrId */
 app.get('/tcrs/:tcrId', function (req, res) {
 	res.json(tcrMap.get(req.params.tcrId));
 });
 
+/* Delete the TCR associated with the tcrId*/
 app.delete('/tcrs/:tcrId', function (req, res) {
 	const config_name = 'config' + req.params.tcrId + '.json';
-	fs.unlink('./conf/' + config_name, (err) => {
-		if (err) console.error(err);
-	});
+	var tcrObj = tcrMap.get(req.params.tcrId);
 	// tcrMap.delete(req.params.tcrId);
+	database.deleteTCR(tcrObj.name, function() {
+	  res.json(req.params.tcrId);
+	});
 });
 
-//Deploy created TCR
+/* Deploy created TCR */
 app.post('/tcrs/:tcrId/deploy', function (req, res) {
 	console.log("Deploying tcr - " + JSON.stringify(req.params.tcrId));
 	const config_filepath = './conf/config' + JSON.stringify(req.params.tcrId) + '.json';
-
-	//TODO: find the argv index for config_filename, then you can use process.argv[3] to pass this config file.
-	cmd.run('npm run deploy-proxies:ganache -- ' + config_filepath);
 });
 
-// Get the listings associated with the given tcrId from the database
-app.get('/tcrs/:tcrId/addListing', function (req, res) {
+/* Add songs to a TCR */
+app.post('/tcrs/:tcrId/listings', function (req, res) {
 	var tcrObj = tcrMap.get(req.params.tcrId)
-	database.addListing(tcrObj.name, list, function(res) {
-	  console.log("Getting the listings");
+	database.addListing(tcrObj.name, req.body.songs, function() {
+	  res.json(tcrObj.id);
 	});
 });
 
+/* Get all songs associated with the given TCR */
 app.get('/tcrs/:tcrId/listings', function(req, res) {
 	var tcrObj = tcrMap.get(req.params.tcrId)
-  database.getListings("TCR7", function(result) {
-		console.log("Helloo:==========");
-		console.log(result);
+  database.getListings(tcrObj.name).then((result) => {
 	  res.json(result);
 	});
 });
+
+/* Update fields of a song */
+app.put('/tcrs/:tcrId/listings', function(req, res) {
+	var tcrObj = tcrMap.get(req.params.tcrId)
+  database.updateSong(tcrObj.name, req.body.song.id, req.body.song, function() {
+	  res.json(tcrObj.id);
+	}); 
+});
+
 
 app.listen(port, () =>console.log(`TCR Server app listening on port ${port}!`));
