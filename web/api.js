@@ -1,5 +1,5 @@
 const express = require('express');
-const deploy = require('./deploy');
+const database = require('./database');
 const bodyParser = require('body-parser');
 const jsonfile = require('jsonfile');
 const fs = require('fs');
@@ -38,16 +38,14 @@ function TcrObject(id, address, name, status, parameters) {
   this.parameters = parameters;
 }
 
-// Get all TCRs
+/* Get all TCRs */ 
 app.get('/tcrs/', (req, res) => {
-  // console.log(tcrMap.values());
   res.json(JSON.stringify([...tcrMap]));
 });
 
-// Create a new tcr
+/* Create a new TCR */
 app.post('/tcrs/', (req, res) => {
   const id = (Math.round((new Date()).getTime() / 1000)).toString();
-  // Create new tcr
   const paramTCR = new TcrObject(
     id, '0x234981210434', req.body.name, 'not deployed',
     req.body.parameters,
@@ -57,13 +55,14 @@ app.post('/tcrs/', (req, res) => {
   jsonfile.writeFile(`./conf/${configFilename}`, paramTCR.parameters, (err) => {
     if (err) console.error(err);
   });
-
   tcrMap.set(id, paramTCR);
-  // res.send(tcrMap.get(id));
-  // console.log(id);
-  res.json(id);
+	//Create a new TCR collection in the database
+	database.createRegistry(paramTCR.name, function() {
+    res.json(id);
+	});
 });
 
+/* Get a specific TCR */
 app.get('/tcrs/:tcrId', (req, res) => {
   res.json(tcrMap.get(req.params.tcrId));
 });
@@ -74,21 +73,12 @@ app.delete('/tcrs/:tcrId', (req, res) => {
   fs.unlink(`./conf/${configName}`, (err) => {
     if (err) console.error(err);
   });
+	var tcrObj = tcrMap.get(req.params.tcrId);
   // tcrMap.delete(req.params.tcrId);
-});
-
-// Deploy created TCR
-app.post('/tcrs/:tcrId/deploy', (req, res) => {
-  console.log(`Deploying tcr - ${JSON.stringify(req.params.tcrId)}`);
-  // Get TCR by ID from map
-  const paramTCR = tcrMap.get(req.params.tcrId);
-  // Get the addresses after deployment
-  const deployed = deploy.deployRegistry(req.body.name, req.params);
-  // Set the appropriate addresses and abi
-  paramTCR.contracts.registry.address = deployed.registry;
-  paramTCR.contracts.voting.addres = deployed.plcr;
-  // Change deploy status
-  paramTCR.status = 'deployed';
+	//update database
+	database.deleteTCR(tcrObj.name, function() {
+	  res.json(req.params.tcrId);
+	});
 });
 
 app.get('/contracts/:contract.json', (req, res) => {
@@ -99,6 +89,30 @@ app.get('/contracts/:contract.json', (req, res) => {
     address: network.address,
     abi: contract.abi,
   });
+});
+
+/* Add songs to a TCR */
+app.post('/tcrs/:tcrId/listings', function (req, res) {
+	var tcrObj = tcrMap.get(req.params.tcrId)
+	database.addListing(tcrObj.name, req.body.songs, function() {
+	  res.json(tcrObj.id);
+	});
+});
+
+/* Get all songs associated with the given TCR */
+app.get('/tcrs/:tcrId/listings', function(req, res) {
+	var tcrObj = tcrMap.get(req.params.tcrId)
+  database.getListings(tcrObj.name).then((result) => {
+	  res.json(result);
+	});
+});
+
+/* Update fields of a song */
+app.put('/tcrs/:tcrId/listings', function(req, res) {
+	var tcrObj = tcrMap.get(req.params.tcrId)
+  database.updateSong(tcrObj.name, req.body.song.id, req.body.song, function() {
+	  res.json(tcrObj.id);
+	}); 
 });
 
 app.listen(port, () => console.log(`TCR Server app listening on port ${port}!`));
