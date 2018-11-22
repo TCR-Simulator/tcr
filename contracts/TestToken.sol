@@ -15,8 +15,10 @@ contract TestToken is EIP20Interface {
     string public name;                   //fancy name: eg Simon Bucks
     uint8 public decimals;                //How many decimals to show.
     string public symbol;                 //An identifier: eg SBX
-
+	address public owner;
+	
     constructor() {
+		owner = msg.sender;
         balances[msg.sender] = 1000000000 * 10 ** 18;        // Give the creator all initial tokens
         totalSupply = 1000000000 * 10 ** 18;                 // Update total supply
         name = 'TestToken';                                  // Set the name for display purposes
@@ -50,9 +52,13 @@ contract TestToken is EIP20Interface {
         return balances[_owner];
     }
 	
+	function currentAccountBalance() view public returns (uint balance) {
+        return balances[msg.sender];
+    }
+	
 	function sendToken(address _to, uint256 _value) external {
-        require(balances[msg.sender] >= value); // Underflow check
-        balances[msg.sender] -= value;
+        require(balances[owner] >= value); // Underflow check
+        balances[owner] -= value;
         balances[_to] += _value;
         require(balances[_to] >= _value); // Overflow check
         Transfer(msg.sender, _to, _value);
