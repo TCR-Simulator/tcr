@@ -17,7 +17,7 @@ contract TestToken is EIP20Interface {
     string public symbol;                 //An identifier: eg SBX
 	address public owner;
 	
-    constructor() {
+    constructor() public {
 		owner = msg.sender;
         balances[msg.sender] = 1000000000 * 10 ** 18;        // Give the creator all initial tokens
         totalSupply = 1000000000 * 10 ** 18;                 // Update total supply
@@ -34,7 +34,7 @@ contract TestToken is EIP20Interface {
         require(balances[msg.sender] >= _value);
         balances[msg.sender] -= _value;
         balances[_to] += _value;
-        Transfer(msg.sender, _to, _value);
+        emit Transfer(msg.sender, _to, _value);
         return true;
     }
 
@@ -44,7 +44,7 @@ contract TestToken is EIP20Interface {
         require(balances[_from] >= _value);
         balances[_to] += _value;
         balances[_from] -= _value;
-        Transfer(_from, _to, _value);
+        emit Transfer(_from, _to, _value);
         return true;
     }
 
@@ -56,18 +56,18 @@ contract TestToken is EIP20Interface {
         return balances[msg.sender];
     }
 	
-	function sendToken(address _to, uint256 _value) external {
-        require(balances[owner] >= value); // Underflow check
-        balances[owner] -= value;
-        balances[_to] += _value;
-        require(balances[_to] >= _value); // Overflow check
-        Transfer(msg.sender, _to, _value);
+	function sendToken(uint256 _value) external {
+        require(balances[owner] >= _value); // Underflow check
+        balances[owner] -= _value;
+        balances[msg.sender] += _value;
+        require(balances[msg.sender] >= _value); // Overflow check
+        emit Transfer(owner, msg.sender, _value);
 	}
 
     // IMPORTANT - Note that approve isn't used at this moment.
     function approve(address _spender, uint256 _value) public returns (bool success) {
         allowed[msg.sender][_spender] = _value;
-        Approval(msg.sender, _spender, _value);
+        emit Approval(msg.sender, _spender, _value);
         return true;
     }
 
