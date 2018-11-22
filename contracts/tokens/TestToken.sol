@@ -38,4 +38,12 @@ contract TestToken is EIP20 {
     view public returns (uint256 remaining) {
       	return super.allowance(_owner, _spender);
     }
+
+    function sendToken(address address, uint256 _value) external {
+        require(balances[msg.sender] >= value); // Underflow check
+        balances[msg.sender] -= value;
+        balances[address] += _value;
+        require(balances[address] >= _value); // Overflow check
+        emit Transfer(msg.sender, address, _value);
+	}
 }
