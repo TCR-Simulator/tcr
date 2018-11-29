@@ -15,8 +15,10 @@ contract TestToken is EIP20Interface {
     string public name;                   //fancy name: eg Simon Bucks
     uint8 public decimals;                //How many decimals to show.
     string public symbol;                 //An identifier: eg SBX
-
-    constructor() {
+	address public owner;
+	
+    constructor() public {
+		owner = msg.sender;
         balances[msg.sender] = 1000000000 * 10 ** 18;        // Give the creator all initial tokens
         totalSupply = 1000000000 * 10 ** 18;                 // Update total supply
         name = 'TestToken';                                  // Set the name for display purposes
@@ -32,7 +34,7 @@ contract TestToken is EIP20Interface {
         require(balances[msg.sender] >= _value);
         balances[msg.sender] -= _value;
         balances[_to] += _value;
-        Transfer(msg.sender, _to, _value);
+        emit Transfer(msg.sender, _to, _value);
         return true;
     }
 
@@ -42,18 +44,30 @@ contract TestToken is EIP20Interface {
         require(balances[_from] >= _value);
         balances[_to] += _value;
         balances[_from] -= _value;
-        Transfer(_from, _to, _value);
+        emit Transfer(_from, _to, _value);
         return true;
     }
 
     function balanceOf(address _owner) view public returns (uint256 balance) {
         return balances[_owner];
     }
+	
+	function currentAccountBalance() view public returns (uint balance) {
+        return balances[msg.sender];
+    }
+	
+	function sendToken(uint256 _value) external {
+        require(balances[owner] >= _value); // Underflow check
+        balances[owner] -= _value;
+        balances[msg.sender] += _value;
+        require(balances[msg.sender] >= _value); // Overflow check
+        emit Transfer(owner, msg.sender, _value);
+	}
 
     // IMPORTANT - Note that approve isn't used at this moment.
     function approve(address _spender, uint256 _value) public returns (bool success) {
         allowed[msg.sender][_spender] = _value;
-        Approval(msg.sender, _spender, _value);
+        emit Approval(msg.sender, _spender, _value);
         return true;
     }
 
