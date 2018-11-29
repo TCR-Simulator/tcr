@@ -38,7 +38,7 @@ function TcrObject(id, address, name, status, parameters) {
   this.parameters = parameters;
 }
 
-/* Get all TCRs */ 
+/* Get all TCRs */
 app.get('/tcrs/', (req, res) => {
   res.json(JSON.stringify([...tcrMap]));
 });
@@ -56,10 +56,10 @@ app.post('/tcrs/', (req, res) => {
     if (err) console.error(err);
   });
   tcrMap.set(id, paramTCR);
-	//Create a new TCR collection in the database
-	database.createRegistry(paramTCR.name, function() {
+  // Create a new TCR collection in the database
+  database.createRegistry(paramTCR.name, () => {
     res.json(id);
-	});
+  });
 });
 
 /* Get a specific TCR */
@@ -73,12 +73,12 @@ app.delete('/tcrs/:tcrId', (req, res) => {
   fs.unlink(`./conf/${configName}`, (err) => {
     if (err) console.error(err);
   });
-	var tcrObj = tcrMap.get(req.params.tcrId);
+  const tcrObj = tcrMap.get(req.params.tcrId);
   // tcrMap.delete(req.params.tcrId);
-	//update database
-	database.deleteTCR(tcrObj.name, function() {
-	  res.json(req.params.tcrId);
-	});
+  // update database
+  database.deleteTCR(tcrObj.name, () => {
+    res.json(req.params.tcrId);
+  });
 });
 
 app.get('/contracts/:contract.json', (req, res) => {
@@ -92,27 +92,27 @@ app.get('/contracts/:contract.json', (req, res) => {
 });
 
 /* Add songs to a TCR */
-app.post('/tcrs/:tcrId/listings', function (req, res) {
-	var tcrObj = tcrMap.get(req.params.tcrId)
-	database.addListing(tcrObj.name, req.body.songs, function() {
-	  res.json(tcrObj.id);
-	});
+app.post('/tcrs/:tcrId/listings', (req, res) => {
+  const tcrObj = tcrMap.get(req.params.tcrId);
+  database.addListing(tcrObj.name, req.body.songs, () => {
+    res.json(tcrObj.id);
+  });
 });
 
 /* Get all songs associated with the given TCR */
-app.get('/tcrs/:tcrId/listings', function(req, res) {
-	var tcrObj = tcrMap.get(req.params.tcrId)
+app.get('/tcrs/:tcrId/listings', (req, res) => {
+  const tcrObj = tcrMap.get(req.params.tcrId);
   database.getListings(tcrObj.name).then((result) => {
-	  res.json(result);
-	});
+    res.json(result);
+  });
 });
 
 /* Update fields of a song */
-app.put('/tcrs/:tcrId/listings', function(req, res) {
-	var tcrObj = tcrMap.get(req.params.tcrId)
-  database.updateSong(tcrObj.name, req.body.song.id, req.body.song, function() {
-	  res.json(tcrObj.id);
-	}); 
+app.put('/tcrs/:tcrId/listings', (req, res) => {
+  const tcrObj = tcrMap.get(req.params.tcrId);
+  database.updateSong(tcrObj.name, req.body.song.id, req.body.song, () => {
+    res.json(tcrObj.id);
+  });
 });
 
 app.listen(port, () => console.log(`TCR Server app listening on port ${port}!`));
